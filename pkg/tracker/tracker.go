@@ -36,7 +36,7 @@ func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateInd
 
 func fetchSummaries(ctx context.Context, token string, repos []krew.PluginHandle) []github.RepoSummary {
 	releaseFetcher := github.NewReleaseFetcher(ctx, token)
-	var summaries []github.RepoSummary
+	summaries := make([]github.RepoSummary, 0, len(repos))
 	for _, repo := range repos {
 		summary, err := releaseFetcher.RepoSummary(repo.Owner, repo.Repo)
 		if err != nil {
