@@ -20,18 +20,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-	"os/signal"
 	"regexp"
-	"syscall"
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/git"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github"
+	"github.com/corneliusweig/krew-index-tracker/pkg/util"
 	"github.com/pkg/errors"
-	"sigs.k8s.io/krew/pkg/index"
-
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 )
 
@@ -65,7 +62,7 @@ var rootCmd = &cobra.Command{
 			logrus.Fatal(err)
 		}
 
-		ctx := contextWithCtrlCHandler(context.Background())
+		ctx := util.ContextWithCtrlCHandler(context.Background())
 		releaseFetcher := github.NewReleaseFetcher(ctx, token)
 		summary, err := releaseFetcher.RepoSummary(repos[0].owner, repos[0].repo)
 		marshal, _ := json.Marshal(summary)
@@ -100,20 +97,4 @@ func getRepoList() ([]pluginHandle, error) {
 		})
 	}
 	return res, nil
-}
-
-func contextWithCtrlCHandler(ctx context.Context) context.Context {
-	ctx, cancel := context.WithCancel(ctx)
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT, syscall.SIGPIPE)
-
-	go func() {
-		<-sigs
-		signal.Stop(sigs)
-		cancel()
-		logrus.Infof("Aborted.")
-	}()
-
-	return ctx
 }
