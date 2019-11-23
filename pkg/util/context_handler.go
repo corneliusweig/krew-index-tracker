@@ -2,10 +2,11 @@ package util
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
 )
 
 func ContextWithCtrlCHandler(ctx context.Context) context.Context {

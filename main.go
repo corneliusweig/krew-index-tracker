@@ -18,10 +18,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"regexp"
 
+	"github.com/corneliusweig/krew-index-tracker/pkg/bigquery"
+	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
 	"github.com/corneliusweig/krew-index-tracker/pkg/git"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github"
 	"github.com/corneliusweig/krew-index-tracker/pkg/util"
@@ -30,11 +30,6 @@ import (
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
-)
-
-const (
-	indexDir   = "index"
-	pluginsDir = indexDir + "/plugins"
 )
 
 var (
@@ -53,7 +48,7 @@ var rootCmd = &cobra.Command{
 	Short:   "Generate a markdown changelog of merged pull requests since last release",
 	Args:    cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := git.UpdateAndCleanUntracked(isUpdateIndex, indexDir); err != nil {
+		if err := git.UpdateAndCleanUntracked(isUpdateIndex, constants.IndexDir); err != nil {
 			logrus.Fatal(err)
 		}
 
@@ -64,9 +59,21 @@ var rootCmd = &cobra.Command{
 
 		ctx := util.ContextWithCtrlCHandler(context.Background())
 		releaseFetcher := github.NewReleaseFetcher(ctx, token)
-		summary, err := releaseFetcher.RepoSummary(repos[0].owner, repos[0].repo)
-		marshal, _ := json.Marshal(summary)
-		fmt.Printf("%s", string(marshal))
+
+		var summaries []github.RepoSummary
+		for _, repo := range repos {
+			summary, err := releaseFetcher.RepoSummary(repo.owner, repo.repo)
+			if err != nil {
+				logrus.Warn(err)
+				continue
+			}
+			summaries = append(summaries, summary)
+		}
+
+		if err := bigquery.Upload(ctx, summaries); err != nil {
+			logrus.Error(err)
+		}
+		logrus.Debugf("All good")
 	},
 }
 
@@ -79,7 +86,7 @@ func main() {
 }
 
 func getRepoList() ([]pluginHandle, error) {
-	plugins, err := indexscanner.LoadPluginListFromFS(pluginsDir)
+	plugins, err := indexscanner.LoadPluginListFromFS(constants.PluginsDir)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not read index")
 	}

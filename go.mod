@@ -3,6 +3,8 @@ module github.com/corneliusweig/krew-index-tracker
 go 1.12
 
 require (
+	cloud.google.com/go v0.46.3
+	cloud.google.com/go/bigquery v1.3.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/google/go-github/v28 v28.1.1
 	github.com/pkg/errors v0.8.1

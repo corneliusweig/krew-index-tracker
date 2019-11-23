@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"time"
 
 	api "github.com/google/go-github/v28/github"
 	"golang.org/x/oauth2"
@@ -21,7 +22,7 @@ type RepoSummary struct {
 type ReleaseSummary struct {
 	TagName       string         `json:"tag,omitempty"`
 	Name          string         `json:"name,omitempty"`
-	PublishedAt   api.Timestamp  `json:"published_at,omitempty"`
+	PublishedAt   time.Time      `json:"published_at,omitempty"`
 	User          string         `json:"user,omitempty"`
 	ReleaseAssets []AssetSummary `json:"assets,omitempty"`
 }
@@ -70,7 +71,7 @@ func toReleaseSummaries(rs []*api.RepositoryRelease) (res []ReleaseSummary) {
 		res = append(res, ReleaseSummary{
 			TagName:       r.GetTagName(),
 			Name:          r.GetName(),
-			PublishedAt:   r.GetPublishedAt(),
+			PublishedAt:   r.GetPublishedAt().Time,
 			User:          r.GetAuthor().GetLogin(),
 			ReleaseAssets: toAssetSummaries(r.Assets),
 		})
