@@ -19,11 +19,7 @@ package main
 import (
 	"context"
 
-	"github.com/corneliusweig/krew-index-tracker/pkg/bigquery"
-	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
-	"github.com/corneliusweig/krew-index-tracker/pkg/git"
-	"github.com/corneliusweig/krew-index-tracker/pkg/github"
-	"github.com/corneliusweig/krew-index-tracker/pkg/krew"
+	"github.com/corneliusweig/krew-index-tracker/pkg/tracker"
 	"github.com/corneliusweig/krew-index-tracker/pkg/util"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -41,32 +37,7 @@ var rootCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := util.ContextWithCtrlCHandler(context.Background())
-
-		if err := git.UpdateAndCleanUntracked(ctx, isUpdateIndex, constants.IndexDir); err != nil {
-			logrus.Fatal(err)
-		}
-
-		repos, err := krew.GetRepoList()
-		if err != nil {
-			logrus.Fatal(err)
-		}
-
-		releaseFetcher := github.NewReleaseFetcher(ctx, token)
-
-		var summaries []github.RepoSummary
-		for _, repo := range repos {
-			summary, err := releaseFetcher.RepoSummary(repo.Owner, repo.Repo)
-			if err != nil {
-				logrus.Warn(err)
-				continue
-			}
-			summaries = append(summaries, summary)
-		}
-
-		if err := bigquery.Upload(ctx, summaries); err != nil {
-			logrus.Error(err)
-		}
-		logrus.Debugf("All good")
+		tracker.SaveDownloadCountsToBigQuery(ctx, token, isUpdateIndex)
 	},
 }
 
