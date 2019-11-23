@@ -18,7 +18,7 @@ func UpdateAndCleanUntracked(updateIndex bool, destinationPath string) error {
 	if !updateIndex {
 		return nil
 	}
-	if err := git(destinationPath, "fetch", "-v"); err != nil {
+	if err := git(destinationPath, "fetch", "origin", "master", "--verbose", "--depth", "1"); err != nil {
 		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
 	}
 
