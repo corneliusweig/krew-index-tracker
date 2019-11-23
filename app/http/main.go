@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -32,11 +33,12 @@ func main() {
 		port = "8080"
 	}
 
-	go func() { log.Fatal(http.ListenAndServe(":"+port, &requestHandler{})) }()
+	log.Fatal(http.ListenAndServe(":"+port, &requestHandler{}))
 }
 
 func (h *requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+	fmt.Println("Transfer triggered")
 	token := os.Getenv("GITHUB_TOKEN")
 	tracker.SaveDownloadCountsToBigQuery(r.Context(), token, true)
 	w.WriteHeader(http.StatusOK)
