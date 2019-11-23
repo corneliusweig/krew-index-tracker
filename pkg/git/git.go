@@ -2,6 +2,7 @@ package git
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"os/exec"
@@ -14,25 +15,25 @@ import (
 // UpdateAndCleanUntracked will fetch origin and set HEAD to origin/HEAD
 // and also will create a pristine working directory by removing
 // untracked files and directories.
-func UpdateAndCleanUntracked(updateIndex bool, destinationPath string) error {
+func UpdateAndCleanUntracked(ctx context.Context, updateIndex bool, destinationPath string) error {
 	if !updateIndex {
 		return nil
 	}
-	if err := git(destinationPath, "fetch", "origin", "master", "--verbose", "--depth", "1"); err != nil {
+	if err := git(ctx, destinationPath, "fetch", "origin", "master", "--verbose", "--depth", "1"); err != nil {
 		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
 	}
 
-	if err := git(destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
+	if err := git(ctx, destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
 		return errors.Wrapf(err, "reset index at %q failed", destinationPath)
 	}
 
-	err := git(destinationPath, "clean", "-xfd")
+	err := git(ctx, destinationPath, "clean", "-xfd")
 	return errors.Wrapf(err, "clean index at %q failed", destinationPath)
 }
 
-func git(pwd string, args ...string) error {
+func git(ctx context.Context, pwd string, args ...string) error {
 	logrus.Infof("Going to run git %s", strings.Join(args, " "))
-	cmd := exec.Command("git", args...)
+	cmd := exec.CommandContext(ctx, "git", args...)
 	cmd.Dir = pwd
 	buf := bytes.Buffer{}
 	var w io.Writer = &buf

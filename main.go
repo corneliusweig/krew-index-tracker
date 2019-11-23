@@ -40,7 +40,9 @@ var rootCmd = &cobra.Command{
 	Short:   "Generate a markdown changelog of merged pull requests since last release",
 	Args:    cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := git.UpdateAndCleanUntracked(isUpdateIndex, constants.IndexDir); err != nil {
+		ctx := util.ContextWithCtrlCHandler(context.Background())
+
+		if err := git.UpdateAndCleanUntracked(ctx, isUpdateIndex, constants.IndexDir); err != nil {
 			logrus.Fatal(err)
 		}
 
@@ -49,7 +51,6 @@ var rootCmd = &cobra.Command{
 			logrus.Fatal(err)
 		}
 
-		ctx := util.ContextWithCtrlCHandler(context.Background())
 		releaseFetcher := github.NewReleaseFetcher(ctx, token)
 
 		var summaries []github.RepoSummary
