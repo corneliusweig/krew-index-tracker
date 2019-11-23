@@ -18,29 +18,21 @@ package main
 
 import (
 	"context"
-	"regexp"
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/bigquery"
 	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
 	"github.com/corneliusweig/krew-index-tracker/pkg/git"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github"
+	"github.com/corneliusweig/krew-index-tracker/pkg/krew"
 	"github.com/corneliusweig/krew-index-tracker/pkg/util"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
 )
 
 var (
 	token         string
 	isUpdateIndex bool
 )
-
-type pluginHandle struct {
-	index.PluginSpec
-	owner, repo string
-}
 
 var rootCmd = &cobra.Command{
 	Use:     "krew-index-tracker",
@@ -52,7 +44,7 @@ var rootCmd = &cobra.Command{
 			logrus.Fatal(err)
 		}
 
-		repos, err := getRepoList()
+		repos, err := krew.GetRepoList()
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -62,7 +54,7 @@ var rootCmd = &cobra.Command{
 
 		var summaries []github.RepoSummary
 		for _, repo := range repos {
-			summary, err := releaseFetcher.RepoSummary(repo.owner, repo.repo)
+			summary, err := releaseFetcher.RepoSummary(repo.Owner, repo.Repo)
 			if err != nil {
 				logrus.Warn(err)
 				continue
@@ -83,25 +75,4 @@ func main() {
 	if err := rootCmd.Execute(); err != nil {
 		logrus.Fatal(err)
 	}
-}
-
-func getRepoList() ([]pluginHandle, error) {
-	plugins, err := indexscanner.LoadPluginListFromFS(constants.PluginsDir)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not read index")
-	}
-	gitHubRepo := regexp.MustCompile(".*github.com/([^/]+)/([^/]+).*")
-	res := make([]pluginHandle, 0, len(plugins))
-	for _, plugin := range plugins {
-		submatch := gitHubRepo.FindStringSubmatch(plugin.Spec.Homepage)
-		if len(submatch) < 3 {
-			continue
-		}
-		res = append(res, pluginHandle{
-			PluginSpec: plugins[0].Spec,
-			owner:      submatch[1],
-			repo:       submatch[2],
-		})
-	}
-	return res, nil
 }
