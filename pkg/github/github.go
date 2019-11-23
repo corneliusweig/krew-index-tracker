@@ -5,6 +5,8 @@ import (
 	"time"
 
 	api "github.com/google/go-github/v28/github"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -43,7 +45,7 @@ func NewReleaseFetcher(ctx context.Context, token string) *ReleaseFetcher {
 func (rf *ReleaseFetcher) RepoSummary(owner, repo string) (RepoSummary, error) {
 	releases, _, err := rf.client.Repositories.ListReleases(rf.ctx, owner, repo, nil)
 	if err != nil {
-		return RepoSummary{}, err
+		return RepoSummary{}, errors.Wrapf(err, "listing releases of %s/%s", owner, repo)
 	}
 	return RepoSummary{
 		Owner:    owner,
@@ -66,6 +68,7 @@ func toAssetSummaries(as []api.ReleaseAsset) (res []AssetSummary) {
 func toReleaseSummaries(rs []*api.RepositoryRelease) (res []ReleaseSummary) {
 	for _, r := range rs {
 		if r.GetPrerelease() || r.GetDraft() {
+			logrus.Debugf("Skipping release %s", r.GetName())
 			continue
 		}
 		res = append(res, ReleaseSummary{

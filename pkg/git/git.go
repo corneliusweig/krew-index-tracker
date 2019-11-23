@@ -17,8 +17,10 @@ import (
 // untracked files and directories.
 func UpdateAndCleanUntracked(ctx context.Context, updateIndex bool, destinationPath string) error {
 	if !updateIndex {
+		logrus.Infof("Skipping index update")
 		return nil
 	}
+
 	if err := git(ctx, destinationPath, "fetch", "origin", "master", "--verbose", "--depth", "1"); err != nil {
 		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
 	}

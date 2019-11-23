@@ -20,6 +20,8 @@ type PluginHandle struct {
 }
 
 func GetRepoList() ([]PluginHandle, error) {
+	logrus.Debugf("Reading repo list")
+
 	plugins, err := indexscanner.LoadPluginListFromFS(constants.PluginsDir)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not read index")

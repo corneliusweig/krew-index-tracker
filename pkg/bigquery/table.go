@@ -2,7 +2,6 @@ package bigquery
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"cloud.google.com/go/bigquery"
@@ -15,17 +14,17 @@ import (
 func Upload(ctx context.Context, items []github.RepoSummary) error {
 	client, err := bigquery.NewClient(ctx, constants.ProjectID)
 	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
+		return errors.Wrapf(err, "failed to create bq client")
 	}
 
 	ds, err := ensureDataset(ctx, client)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to initialize dataset")
 	}
 
 	table, err := ensureTable(ctx, ds)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to initialize table")
 	}
 
 	return errors.Wrapf(table.Inserter().Put(ctx, items), "could not insert rows into BQ")
@@ -36,7 +35,7 @@ func ensureDataset(ctx context.Context, client *bigquery.Client) (*bigquery.Data
 	ds := client.Dataset(constants.BQDataset)
 
 	if meta, _ := ds.Metadata(ctx); meta != nil {
-		logrus.Debugf("Dataset already exists")
+		logrus.Infof("Dataset already exists")
 		return ds, nil
 	}
 
@@ -47,7 +46,7 @@ func ensureDataset(ctx context.Context, client *bigquery.Client) (*bigquery.Data
 	}); err != nil {
 		return nil, errors.Wrapf(err, "creating dataset")
 	}
-	logrus.Debugf("Dataset created")
+	logrus.Infof("Dataset created")
 
 	return ds, nil
 }
@@ -66,7 +65,7 @@ func ensureTable(ctx context.Context, ds *bigquery.Dataset) (*bigquery.Table, er
 		logrus.Infof("Found table with the same name")
 	} else {
 		if err := table.Create(ctx, &bigquery.TableMetadata{Schema: schema}); err != nil {
-			return nil, errors.Wrapf(err, "could not create bq table")
+			return nil, errors.Wrapf(err, "could not create BQ table '%s'", tableName)
 		}
 		logrus.Infof("Created table '%s'", tableName)
 	}
