@@ -20,26 +20,20 @@ import (
 	"context"
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/bigquery"
-	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
-	"github.com/corneliusweig/krew-index-tracker/pkg/git"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github"
-	"github.com/corneliusweig/krew-index-tracker/pkg/krew"
+	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
+	"github.com/corneliusweig/krew-index-tracker/pkg/repository/krew"
 	"github.com/sirupsen/logrus"
 )
 
 func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateIndex bool) {
-	logrus.Debugf("U")
-	if err := git.UpdateAndCleanUntracked(ctx, isUpdateIndex, constants.IndexDir); err != nil {
-		logrus.Fatal(err)
-	}
-
-	logrus.Infof("Reading repo list")
-	repos, err := krew.GetRepoList()
+	logrus.Infof("Determine repositories to inspect")
+	repos, err := krew.NewKrewIndexRepositoryProvider(isUpdateIndex).List(ctx)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	logrus.Infof("Fetching repo download summaries")
+	logrus.Infof("Fetching repository download summaries")
 	summaries := fetchSummaries(ctx, token, repos)
 
 	logrus.Infof("Uploading summaries to BigQuery")
@@ -50,7 +44,7 @@ func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateInd
 	logrus.Infof("All good")
 }
 
-func fetchSummaries(ctx context.Context, token string, repos []krew.PluginHandle) []github.RepoSummary {
+func fetchSummaries(ctx context.Context, token string, repos []repository.Handle) []github.RepoSummary {
 	releaseFetcher := github.NewReleaseFetcher(ctx, token)
 	summaries := make([]github.RepoSummary, 0, len(repos))
 	for _, repo := range repos {
