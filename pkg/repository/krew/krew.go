@@ -18,18 +18,14 @@ package krew
 
 import (
 	"context"
-	"regexp"
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
 	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
 	"github.com/corneliusweig/krew-index-tracker/pkg/repository/krew/internal"
+	"github.com/corneliusweig/krew-index-tracker/pkg/repository/url"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
-)
-
-var (
-	gitHubRepo = regexp.MustCompile(".*github.com/([^/]+)/([^/]+).*")
 )
 
 type IndexRepositoryProvider struct {
@@ -53,24 +49,19 @@ func (k IndexRepositoryProvider) List(ctx context.Context) ([]repository.Handle,
 
 func getRepoList() ([]repository.Handle, error) {
 	logrus.Infof("Reading repo list")
-
 	plugins, err := indexscanner.LoadPluginListFromFS(constants.PluginsDir)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not read index")
 	}
+
 	res := make([]repository.Handle, 0, len(plugins))
 	for _, plugin := range plugins {
-		homepage := plugin.Spec.Homepage
-		submatch := gitHubRepo.FindStringSubmatch(homepage)
-		if len(submatch) < 3 {
-			logrus.Infof("Skipping repository '%s'", homepage)
+		owner, repo, err := url.Parse(plugin.Spec.Homepage)
+		if err != nil {
+			logrus.Infof("Skipping repository plugin: %s", err)
 			continue
 		}
-		logrus.Debugf("%s -> %s/%s", homepage, submatch[1], submatch[2])
-		res = append(res, repository.Handle{
-			Owner: submatch[1],
-			Repo:  submatch[2],
-		})
+		res = append(res, repository.Handle{Owner: owner, Repo: repo})
 	}
 	return res, nil
 }
