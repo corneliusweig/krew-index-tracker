@@ -33,9 +33,9 @@ type Provider struct {
 
 var _ repository.Provider = Provider{}
 
-// NewStaticRepositoryProvider creates a repository provider which is configured by a static
+// NewRepositoryProvider creates a repository provider which is configured by a static
 // list of github repositories. It expects one github URL per line in the file.
-func NewStaticRepositoryProvider(filename string) repository.Provider {
+func NewRepositoryProvider(filename string) repository.Provider {
 	return &Provider{filename: filename}
 }
 

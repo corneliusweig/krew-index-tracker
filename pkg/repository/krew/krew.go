@@ -35,7 +35,7 @@ type IndexRepositoryProvider struct {
 
 var _ repository.Provider = IndexRepositoryProvider{}
 
-func NewKrewIndexRepositoryProvider(isUpdateIndex bool) repository.Provider {
+func NewRepositoryProvider(isUpdateIndex bool) repository.Provider {
 	return &IndexRepositoryProvider{updateIndex: isUpdateIndex}
 }
 

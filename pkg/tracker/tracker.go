@@ -28,7 +28,7 @@ import (
 
 func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateIndex bool) {
 	logrus.Infof("Determine repositories to inspect")
-	repos, err := krew.NewKrewIndexRepositoryProvider(isUpdateIndex).List(ctx)
+	repos, err := krew.NewRepositoryProvider(isUpdateIndex).List(ctx)
 	if err != nil {
 		logrus.Fatal(err)
 	}
