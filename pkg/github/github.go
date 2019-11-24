@@ -58,7 +58,8 @@ func NewReleaseFetcher(ctx context.Context, token string) *ReleaseFetcher {
 	}
 }
 
-func (rf *ReleaseFetcher) RepoSummary(owner, repo string) (RepoSummary, error) {
+func (rf *ReleaseFetcher) Summary(owner, repo string) (RepoSummary, error) {
+	logrus.Infof("Fetching summary for %s/%s", owner, repo)
 	releases, _, err := rf.client.Repositories.ListReleases(rf.ctx, owner, repo, nil)
 	if err != nil {
 		return RepoSummary{}, errors.Wrapf(err, "listing releases of %s/%s", owner, repo)

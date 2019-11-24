@@ -45,10 +45,10 @@ func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateInd
 }
 
 func fetchSummaries(ctx context.Context, token string, repos []repository.Handle) []github.RepoSummary {
-	releaseFetcher := github.NewReleaseFetcher(ctx, token)
+	releases := github.NewReleaseFetcher(ctx, token)
 	summaries := make([]github.RepoSummary, 0, len(repos))
 	for _, repo := range repos {
-		summary, err := releaseFetcher.RepoSummary(repo.Owner, repo.Repo)
+		summary, err := releases.Summary(repo.Owner, repo.Repo)
 		if err != nil {
 			logrus.Warn(err)
 			continue
