@@ -19,6 +19,7 @@ package repository
 import "context"
 
 type Handle struct {
+	PluginName  string
 	Owner, Repo string
 }
 

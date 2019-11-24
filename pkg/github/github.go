@@ -20,6 +20,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
 	api "github.com/google/go-github/v28/github"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -32,9 +33,10 @@ type ReleaseFetcher struct {
 }
 
 type RepoSummary struct {
-	Owner    string           `json:"owner,omitempty"`
-	Repo     string           `json:"repo,omitempty"`
-	Releases []ReleaseSummary `json:"releases,omitempty"`
+	PluginName string           `json:"pluginName,omitempty"`
+	Owner      string           `json:"owner,omitempty"`
+	Repo       string           `json:"repo,omitempty"`
+	Releases   []ReleaseSummary `json:"releases,omitempty"`
 }
 
 type ReleaseSummary struct {
@@ -58,16 +60,17 @@ func NewReleaseFetcher(ctx context.Context, token string) *ReleaseFetcher {
 	}
 }
 
-func (rf *ReleaseFetcher) Summary(owner, repo string) (RepoSummary, error) {
-	logrus.Infof("Fetching summary for %s/%s", owner, repo)
-	releases, _, err := rf.client.Repositories.ListReleases(rf.ctx, owner, repo, nil)
+func (rf *ReleaseFetcher) Summary(h repository.Handle) (RepoSummary, error) {
+	logrus.Infof("Fetching summary for %s/%s", h.Owner, h.Repo)
+	releases, _, err := rf.client.Repositories.ListReleases(rf.ctx, h.Owner, h.Repo, nil)
 	if err != nil {
-		return RepoSummary{}, errors.Wrapf(err, "listing releases of %s/%s", owner, repo)
+		return RepoSummary{}, errors.Wrapf(err, "listing releases of %s/%s", h.Owner, h.Repo)
 	}
 	return RepoSummary{
-		Owner:    owner,
-		Repo:     repo,
-		Releases: toReleaseSummaries(releases),
+		PluginName: h.PluginName,
+		Owner:      h.Owner,
+		Repo:       h.Repo,
+		Releases:   toReleaseSummaries(releases),
 	}, nil
 }
 

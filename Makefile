@@ -27,7 +27,7 @@ lint: $(SRC)
 .PHONY: test
 test: $(SRC)
 	hack/verify-boilerplate.sh && \
-	go test
+	go test ./...
 
 .PHONY: build
 build:

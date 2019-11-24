@@ -63,7 +63,7 @@ func getRepoList() ([]repository.Handle, error) {
 			logrus.Infof("Skipping repository plugin: %s", err)
 			continue
 		}
-		res = append(res, repository.Handle{Owner: owner, Repo: repo})
+		res = append(res, repository.Handle{Owner: owner, Repo: repo, PluginName: plugin.GetName()})
 	}
 	return res, nil
 }

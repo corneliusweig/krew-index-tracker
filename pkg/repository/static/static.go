@@ -55,6 +55,7 @@ func (p Provider) List(ctx context.Context) ([]repository.Handle, error) {
 			logrus.Infof("Skipping repository plugin: %s", err)
 			continue
 		}
+		// todo(corneliusweig): the static provider does not handle PluginName
 		res = append(res, repository.Handle{Owner: owner, Repo: repo})
 	}
 
