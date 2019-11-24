@@ -17,12 +17,14 @@ limitations under the License.
 package krew
 
 import (
+	"context"
 	"regexp"
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
+	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
+	"github.com/corneliusweig/krew-index-tracker/pkg/repository/krew/internal"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 )
 
@@ -30,19 +32,33 @@ var (
 	gitHubRepo = regexp.MustCompile(".*github.com/([^/]+)/([^/]+).*")
 )
 
-type PluginHandle struct {
-	index.PluginSpec
-	Owner, Repo string
+type IndexRepositoryProvider struct {
+	updateIndex bool
 }
 
-func GetRepoList() ([]PluginHandle, error) {
-	logrus.Debugf("Reading repo list")
+var _ repository.Provider = IndexRepositoryProvider{}
+
+func NewKrewIndexRepositoryProvider(isUpdateIndex bool) repository.Provider {
+	return &IndexRepositoryProvider{updateIndex: isUpdateIndex}
+}
+
+func (k IndexRepositoryProvider) List(ctx context.Context) ([]repository.Handle, error) {
+	logrus.Debugf("Updating krew index")
+	if err := internal.UpdateAndCleanUntracked(ctx, k.updateIndex, constants.IndexDir); err != nil {
+		logrus.Fatal(err)
+	}
+
+	return getRepoList()
+}
+
+func getRepoList() ([]repository.Handle, error) {
+	logrus.Infof("Reading repo list")
 
 	plugins, err := indexscanner.LoadPluginListFromFS(constants.PluginsDir)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not read index")
 	}
-	res := make([]PluginHandle, 0, len(plugins))
+	res := make([]repository.Handle, 0, len(plugins))
 	for _, plugin := range plugins {
 		homepage := plugin.Spec.Homepage
 		submatch := gitHubRepo.FindStringSubmatch(homepage)
@@ -51,10 +67,9 @@ func GetRepoList() ([]PluginHandle, error) {
 			continue
 		}
 		logrus.Debugf("%s -> %s/%s", homepage, submatch[1], submatch[2])
-		res = append(res, PluginHandle{
-			PluginSpec: plugins[0].Spec,
-			Owner:      submatch[1],
-			Repo:       submatch[2],
+		res = append(res, repository.Handle{
+			Owner: submatch[1],
+			Repo:  submatch[2],
 		})
 	}
 	return res, nil
