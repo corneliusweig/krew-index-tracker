@@ -20,9 +20,15 @@ krew-index-tracker: $(SRC)
 krew-index-tracker-http: $(SRC)
 	go build -ldflags "-s -w" -o $@ ./app/http
 
+.PHONY: lint
 lint: $(SRC)
 	hack/run-lint.sh
 
+.PHONY: test
 test: $(SRC)
 	hack/verify-boilerplate.sh && \
 	go test
+
+.PHONY: build
+build:
+	gcloud builds submit --config cloudbuild.yaml --substitutions=TAG_NAME="$$(git describe --tags --always)" .
