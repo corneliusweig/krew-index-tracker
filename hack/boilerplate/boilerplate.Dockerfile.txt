@@ -1,4 +1,4 @@
-# Copyright 2019 Cornelius Weig.
+# Copyright YEAR Cornelius Weig.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +12,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-SRC:=$(shell find . -name '*.go')
-
-krew-index-tracker: $(SRC)
-	go build -ldflags "-s -w" -o $@ ./app/krew-index-tracker
-
-krew-index-tracker-http: $(SRC)
-	go build -ldflags "-s -w" -o $@ ./app/http
-
-lint: $(SRC)
-	hack/run-lint.sh
-
-test: $(SRC)
-	hack/verify-boilerplate.sh && \
-	go test

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Copyright 2019 Cornelius Weig.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +14,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-SRC:=$(shell find . -name '*.go')
+# Notice: this script was imported from k8s.io/kubernetes/hack/verify-boilerplate.sh
 
-krew-index-tracker: $(SRC)
-	go build -ldflags "-s -w" -o $@ ./app/krew-index-tracker
+set -o errexit
+set -o nounset
+set -o pipefail
 
-krew-index-tracker-http: $(SRC)
-	go build -ldflags "-s -w" -o $@ ./app/http
+KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 
-lint: $(SRC)
-	hack/run-lint.sh
+boilerDir="${KUBE_ROOT}/hack/boilerplate"
+boiler="${boilerDir}/boilerplate.py"
 
-test: $(SRC)
-	hack/verify-boilerplate.sh && \
-	go test
+files_need_boilerplate=($(${boiler} "$@"))
+
+# Run boilerplate check
+if [[ ${#files_need_boilerplate[@]} -gt 0 ]]; then
+  for file in "${files_need_boilerplate[@]}"; do
+    echo "Boilerplate header is wrong for: ${file}" >&2
+  done
+
+  exit 1
+fi
