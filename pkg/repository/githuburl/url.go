@@ -1,9 +1,10 @@
-package url
+package githuburl
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"regexp"
+
+	"github.com/sirupsen/logrus"
 )
 
 var (
