@@ -18,6 +18,7 @@ package krew
 
 import (
 	"context"
+	"strings"
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
 	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
@@ -56,7 +57,8 @@ func getRepoList() ([]repository.Handle, error) {
 
 	res := make([]repository.Handle, 0, len(plugins))
 	for _, plugin := range plugins {
-		owner, repo, err := githuburl.Parse(plugin.Spec.Homepage)
+		homepage := resolveWellKnownDeviations(plugin.Spec.Homepage)
+		owner, repo, err := githuburl.Parse(homepage)
 		if err != nil {
 			logrus.Infof("Skipping repository plugin: %s", err)
 			continue
@@ -64,4 +66,17 @@ func getRepoList() ([]repository.Handle, error) {
 		res = append(res, repository.Handle{Owner: owner, Repo: repo})
 	}
 	return res, nil
+}
+
+func resolveWellKnownDeviations(url string) string {
+	switch {
+	case strings.HasPrefix(url, `https://sigs.k8s.io/krew`):
+		return "github.com/kubernetes-sigs/krew"
+	case strings.HasPrefix(url, `https://kubernetes.github.io/ingress-nginx/kubectl-plugin`):
+		return "github.com/kubernetes/ingress-nginx"
+	case strings.HasPrefix(url, `https://kudo.dev`):
+		return "github.com/kudobuilder/kudo"
+	default:
+		return url
+	}
 }
