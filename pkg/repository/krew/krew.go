@@ -21,8 +21,8 @@ import (
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
 	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
+	"github.com/corneliusweig/krew-index-tracker/pkg/repository/githuburl"
 	"github.com/corneliusweig/krew-index-tracker/pkg/repository/krew/internal"
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository/url"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
@@ -56,7 +56,7 @@ func getRepoList() ([]repository.Handle, error) {
 
 	res := make([]repository.Handle, 0, len(plugins))
 	for _, plugin := range plugins {
-		owner, repo, err := url.Parse(plugin.Spec.Homepage)
+		owner, repo, err := githuburl.Parse(plugin.Spec.Homepage)
 		if err != nil {
 			logrus.Infof("Skipping repository plugin: %s", err)
 			continue

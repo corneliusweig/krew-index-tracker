@@ -22,7 +22,7 @@ import (
 	"os"
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository/url"
+	"github.com/corneliusweig/krew-index-tracker/pkg/repository/githuburl"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -50,7 +50,7 @@ func (p Provider) List(ctx context.Context) ([]repository.Handle, error) {
 	lines := bufio.NewScanner(repoList)
 	var res []repository.Handle
 	for lines.Scan() {
-		owner, repo, err := url.Parse(lines.Text())
+		owner, repo, err := githuburl.Parse(lines.Text())
 		if err != nil {
 			logrus.Infof("Skipping repository plugin: %s", err)
 			continue
