@@ -68,22 +68,24 @@ func ensureDataset(ctx context.Context, client *bigquery.Client) (*bigquery.Data
 }
 
 func ensureTable(ctx context.Context, ds *bigquery.Dataset) (*bigquery.Table, error) {
-	tableName := createTableName()
-
 	schema, err := bigquery.InferSchema(github.RepoSummary{})
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not infer schema for 'RepoSummary'")
 	}
 	logrus.Debugf("Schema looks good")
 
-	table := ds.Table(tableName)
+	table := ds.Table(constants.BQTableName)
 	if meta, _ := table.Metadata(ctx); meta != nil {
 		logrus.Infof("Found table with the same name")
 	} else {
-		if err := table.Create(ctx, &bigquery.TableMetadata{Schema: schema}); err != nil {
-			return nil, errors.Wrapf(err, "could not create BQ table '%s'", tableName)
+		meta = &bigquery.TableMetadata{
+			Schema:           schema,
+			TimePartitioning: &bigquery.TimePartitioning{Field: "CreatedAt", Expiration: 1000 * 24 * time.Hour},
 		}
-		logrus.Infof("Created table '%s'", tableName)
+		if err := table.Create(ctx, meta); err != nil {
+			return nil, errors.Wrapf(err, "could not create BQ table '%s'", constants.BQTableName)
+		}
+		logrus.Infof("Created table '%s'", constants.BQTableName)
 	}
 
 	return table, nil

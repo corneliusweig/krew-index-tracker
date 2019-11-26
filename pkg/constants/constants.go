@@ -22,5 +22,7 @@ const (
 
 	// Sets your Google Cloud Platform project ID.
 	ProjectID = "krew-k8s"
-	BQDataset = "plugin_download_count"
+
+	BQDataset   = "plugin_download_count"
+	BQTableName = "krew_index_tracker"
 )
