@@ -36,20 +36,19 @@ type RepoSummary struct {
 	PluginName string           `json:"pluginName,omitempty"`
 	Owner      string           `json:"owner,omitempty"`
 	Repo       string           `json:"repo,omitempty"`
+	CreatedAt  time.Time        `json:"created_at,omitempty"`
 	Releases   []ReleaseSummary `json:"releases,omitempty"`
 }
 
 type ReleaseSummary struct {
 	TagName       string         `json:"tag,omitempty"`
-	Name          string         `json:"name,omitempty"`
 	PublishedAt   time.Time      `json:"published_at,omitempty"`
-	User          string         `json:"user,omitempty"`
 	ReleaseAssets []AssetSummary `json:"assets,omitempty"`
 }
 
 type AssetSummary struct {
 	Name          string `json:"name"`
-	State         string `json:"state"`
+	URL           string `json:"url"`
 	DownloadCount int    `json:"download_count"`
 }
 
@@ -70,6 +69,7 @@ func (rf *ReleaseFetcher) Summary(h repository.Handle) (RepoSummary, error) {
 		PluginName: h.PluginName,
 		Owner:      h.Owner,
 		Repo:       h.Repo,
+		CreatedAt:  time.Now(),
 		Releases:   toReleaseSummaries(releases),
 	}, nil
 }
@@ -78,7 +78,7 @@ func toAssetSummaries(as []api.ReleaseAsset) (res []AssetSummary) {
 	for _, asset := range as {
 		res = append(res, AssetSummary{
 			Name:          asset.GetName(),
-			State:         asset.GetState(),
+			URL:           asset.GetBrowserDownloadURL(),
 			DownloadCount: asset.GetDownloadCount(),
 		})
 	}
@@ -93,9 +93,7 @@ func toReleaseSummaries(rs []*api.RepositoryRelease) (res []ReleaseSummary) {
 		}
 		res = append(res, ReleaseSummary{
 			TagName:       r.GetTagName(),
-			Name:          r.GetName(),
 			PublishedAt:   r.GetPublishedAt().Time,
-			User:          r.GetAuthor().GetLogin(),
 			ReleaseAssets: toAssetSummaries(r.Assets),
 		})
 	}
