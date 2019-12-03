@@ -21,6 +21,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/cenkalti/backoff/v3"
 	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
@@ -48,9 +49,11 @@ func (h *requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 	)
 
-	err := backoff.Retry(func() error {
+	err := backoff.RetryNotify(func() error {
 		return tracker.SaveDownloadCountsToBigQuery(r.Context(), token, true)
-	}, retry)
+	}, retry, func(err error, duration time.Duration) {
+		logrus.Warnf("Failed after %s with %s", duration, err)
+	})
 	if err != nil {
 		logrus.Fatalf("Failed repeatedly to download and insert data: %s", err)
 	}
