@@ -90,7 +90,3 @@ func ensureTable(ctx context.Context, ds *bigquery.Dataset) (*bigquery.Table, er
 
 	return table, nil
 }
-
-func createTableName() string {
-	return time.Now().Format("2006_01_02_150405")
-}
