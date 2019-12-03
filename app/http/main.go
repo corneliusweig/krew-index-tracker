@@ -44,11 +44,14 @@ func (h *requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	fmt.Println("Transfer triggered")
 	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		logrus.Fatal("GitHub token was not set")
+	}
+
 	retry := backoff.WithContext(
 		backoff.WithMaxRetries(backoff.NewExponentialBackOff(), constants.DefaultRetries),
 		r.Context(),
 	)
-
 	err := backoff.RetryNotify(func() error {
 		return tracker.SaveDownloadCountsToBigQuery(r.Context(), token, true)
 	}, retry, func(err error, duration time.Duration) {
@@ -58,5 +61,6 @@ func (h *requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		logrus.Fatalf("Failed repeatedly to download and insert data: %s", err)
 	}
 
+	logrus.Infof("All good")
 	w.WriteHeader(http.StatusOK)
 }

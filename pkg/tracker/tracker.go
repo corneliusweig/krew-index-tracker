@@ -45,7 +45,6 @@ func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateInd
 		return errors.Wrapf(err, "failed saving scraped data")
 	}
 
-	logrus.Infof("All good")
 	return nil
 }
 
