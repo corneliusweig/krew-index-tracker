@@ -26,7 +26,7 @@ fi
 
 "$GOPATH/bin/golangci-lint" run \
 		--no-config \
-		-D errcheck \
+		-E errcheck \
 		-E goconst \
 		-E gocritic \
 		-E goimports \

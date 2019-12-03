@@ -35,9 +35,9 @@ var rootCmd = &cobra.Command{
 	Example: "krew-index-tracker",
 	Short:   "Generate a markdown changelog of merged pull requests since last release",
 	Args:    cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := util.ContextWithCtrlCHandler(context.Background())
-		tracker.SaveDownloadCountsToBigQuery(ctx, token, isUpdateIndex)
+		return tracker.SaveDownloadCountsToBigQuery(ctx, token, isUpdateIndex)
 	},
 }
 

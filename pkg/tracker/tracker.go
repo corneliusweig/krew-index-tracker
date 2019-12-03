@@ -23,37 +23,41 @@ import (
 	"github.com/corneliusweig/krew-index-tracker/pkg/github"
 	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
 	"github.com/corneliusweig/krew-index-tracker/pkg/repository/krew"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
-func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateIndex bool) {
+func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateIndex bool) error {
 	logrus.Infof("Determine repositories to inspect")
 	repos, err := krew.NewRepositoryProvider(isUpdateIndex).List(ctx)
 	if err != nil {
-		logrus.Fatal(err)
+		return errors.Wrapf(err, "could not determine list of repositories")
 	}
 
 	logrus.Infof("Fetching repository download summaries")
-	summaries := fetchSummaries(ctx, token, repos)
+	summaries, err := fetchSummaries(ctx, token, repos)
+	if err != nil {
+		return errors.Wrapf(err, "could not fetch repo summaries")
+	}
 
 	logrus.Infof("Uploading summaries to BigQuery")
 	if err := bigquery.Upload(ctx, summaries); err != nil {
-		logrus.Error(err)
-		return
+		return errors.Wrapf(err, "failed saving scraped data")
 	}
+
 	logrus.Infof("All good")
+	return nil
 }
 
-func fetchSummaries(ctx context.Context, token string, handles []repository.Handle) []github.RepoSummary {
+func fetchSummaries(ctx context.Context, token string, handles []repository.Handle) ([]github.RepoSummary, error) {
 	releases := github.NewReleaseFetcher(ctx, token)
 	summaries := make([]github.RepoSummary, 0, len(handles))
 	for _, h := range handles {
 		summary, err := releases.Summary(h)
 		if err != nil {
-			logrus.Warn(err)
-			continue
+			return nil, err
 		}
 		summaries = append(summaries, summary)
 	}
-	return summaries
+	return summaries, nil
 }

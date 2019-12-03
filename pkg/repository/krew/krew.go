@@ -42,7 +42,7 @@ func NewRepositoryProvider(isUpdateIndex bool) repository.Provider {
 func (k IndexRepositoryProvider) List(ctx context.Context) ([]repository.Handle, error) {
 	logrus.Debugf("Updating krew index")
 	if err := internal.UpdateAndCleanUntracked(ctx, k.updateIndex, constants.IndexDir); err != nil {
-		logrus.Fatal(err)
+		return nil, errors.Wrapf(err, "could not update krew index")
 	}
 
 	return getRepoList()
