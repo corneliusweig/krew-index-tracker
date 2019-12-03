@@ -22,7 +22,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/cenkalti/backoff/v3"
+	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
 	"github.com/corneliusweig/krew-index-tracker/pkg/tracker"
+	"github.com/sirupsen/logrus"
 )
 
 type requestHandler struct{}
@@ -40,6 +43,17 @@ func (h *requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	fmt.Println("Transfer triggered")
 	token := os.Getenv("GITHUB_TOKEN")
-	tracker.SaveDownloadCountsToBigQuery(r.Context(), token, true)
+	retry := backoff.WithContext(
+		backoff.WithMaxRetries(backoff.NewExponentialBackOff(), constants.DefaultRetries),
+		r.Context(),
+	)
+
+	err := backoff.Retry(func() error {
+		return tracker.SaveDownloadCountsToBigQuery(r.Context(), token, true)
+	}, retry)
+	if err != nil {
+		logrus.Fatalf("Failed repeatedly to download and insert data: %s", err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 }

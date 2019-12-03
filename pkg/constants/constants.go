@@ -25,4 +25,6 @@ const (
 
 	BQDataset   = "plugin_download_count"
 	BQTableName = "krew_index_tracker"
+
+	DefaultRetries = 5
 )
