@@ -24,9 +24,10 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v3"
-	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
-	"github.com/corneliusweig/krew-index-tracker/pkg/tracker"
 	"github.com/sirupsen/logrus"
+
+	tracker "github.com/corneliusweig/krew-index-tracker/pkg/github"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/constants"
 )
 
 type requestHandler struct{}

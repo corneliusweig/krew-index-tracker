@@ -21,13 +21,14 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
-	"github.com/corneliusweig/krew-index-tracker/pkg/github"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/client"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/constants"
 )
 
-func Upload(ctx context.Context, items []github.RepoSummary) error {
+func Upload(ctx context.Context, items []client.RepoSummary) error {
 	client, err := bigquery.NewClient(ctx, constants.ProjectID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create bq client")
@@ -68,7 +69,7 @@ func ensureDataset(ctx context.Context, client *bigquery.Client) (*bigquery.Data
 }
 
 func ensureTable(ctx context.Context, ds *bigquery.Dataset) (*bigquery.Table, error) {
-	schema, err := bigquery.InferSchema(github.RepoSummary{})
+	schema, err := bigquery.InferSchema(client.RepoSummary{})
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not infer schema for 'RepoSummary'")
 	}

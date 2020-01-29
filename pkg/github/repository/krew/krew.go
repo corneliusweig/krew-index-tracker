@@ -20,13 +20,14 @@ import (
 	"context"
 	"strings"
 
-	"github.com/corneliusweig/krew-index-tracker/pkg/constants"
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository/githuburl"
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository/krew/internal"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
+
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/constants"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository/githuburl"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository/krew/internal"
 )
 
 type IndexRepositoryProvider struct {

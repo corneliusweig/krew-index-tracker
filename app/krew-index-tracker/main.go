@@ -19,10 +19,11 @@ package main
 import (
 	"context"
 
-	"github.com/corneliusweig/krew-index-tracker/pkg/tracker"
-	"github.com/corneliusweig/krew-index-tracker/pkg/util"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	tracker "github.com/corneliusweig/krew-index-tracker/pkg/github"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/util"
 )
 
 var (

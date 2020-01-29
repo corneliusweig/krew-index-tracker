@@ -14,17 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package github
+package client
 
 import (
 	"context"
 	"time"
 
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
 	api "github.com/google/go-github/v28/github"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
+
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository"
 )
 
 type ReleaseFetcher struct {

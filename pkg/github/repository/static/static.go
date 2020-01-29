@@ -21,10 +21,11 @@ import (
 	"context"
 	"os"
 
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository/githuburl"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository/githuburl"
 )
 
 type Provider struct {

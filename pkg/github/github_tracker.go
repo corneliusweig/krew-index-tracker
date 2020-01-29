@@ -14,17 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package tracker
+package github
 
 import (
 	"context"
 
-	"github.com/corneliusweig/krew-index-tracker/pkg/bigquery"
-	"github.com/corneliusweig/krew-index-tracker/pkg/github"
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository"
-	"github.com/corneliusweig/krew-index-tracker/pkg/repository/krew"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/bigquery"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/client"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository/krew"
 )
 
 func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateIndex bool) error {
@@ -48,9 +49,9 @@ func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateInd
 	return nil
 }
 
-func fetchSummaries(ctx context.Context, token string, handles []repository.Handle) ([]github.RepoSummary, error) {
-	releases := github.NewReleaseFetcher(ctx, token)
-	summaries := make([]github.RepoSummary, 0, len(handles))
+func fetchSummaries(ctx context.Context, token string, handles []repository.Handle) ([]client.RepoSummary, error) {
+	releases := client.NewReleaseFetcher(ctx, token)
+	summaries := make([]client.RepoSummary, 0, len(handles))
 	for _, h := range handles {
 		summary, err := releases.Summary(h)
 		if err != nil {
