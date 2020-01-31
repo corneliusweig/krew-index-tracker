@@ -26,11 +26,11 @@ func GithubBigQuery() *uploader.Client {
 	return uploader.NewClient(
 		globals.ProjectID,
 		uploader.Entity{
-			Id:          globals.BQDataset,
+			ID:          globals.BQDataset,
 			Description: "Download counts for all plugins in the centralized krew index",
 		},
 		uploader.Entity{
-			Id:          "krew_index_tracker",
+			ID:          "krew_index_tracker",
 			Description: "Download counts for all plugins in the centralized krew index",
 		},
 		func() (bigquery.Schema, error) {

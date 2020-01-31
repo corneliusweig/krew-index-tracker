@@ -27,14 +27,14 @@ import (
 )
 
 type Entity struct {
-	Id          string
+	ID          string
 	Description string
 }
 
 type SchemaGenerator func() (bigquery.Schema, error)
 
 type Client struct {
-	projectId string
+	projectID string
 	dataset   Entity
 	table     Entity
 	getSchema SchemaGenerator
@@ -42,7 +42,7 @@ type Client struct {
 
 func NewClient(project string, dataset, table Entity, getSchema SchemaGenerator) *Client {
 	return &Client{
-		projectId: project,
+		projectID: project,
 		dataset:   dataset,
 		table:     table,
 		getSchema: getSchema,
@@ -50,11 +50,11 @@ func NewClient(project string, dataset, table Entity, getSchema SchemaGenerator)
 }
 
 func (c *Client) String() string {
-	return fmt.Sprintf("%s.%s.%s", c.projectId, c.dataset.Id, c.table.Id)
+	return fmt.Sprintf("%s.%s.%s", c.projectID, c.dataset.ID, c.table.ID)
 }
 
 func (c *Client) Upload(ctx context.Context, data interface{}) error {
-	client, err := bigquery.NewClient(ctx, c.projectId)
+	client, err := bigquery.NewClient(ctx, c.projectID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create bq client")
 	}
@@ -74,7 +74,7 @@ func (c *Client) Upload(ctx context.Context, data interface{}) error {
 
 func (c *Client) ensureDataset(ctx context.Context, client *bigquery.Client) (*bigquery.Dataset, error) {
 	// Creates the new BigQuery dataset.
-	ds := client.Dataset(c.dataset.Id)
+	ds := client.Dataset(c.dataset.ID)
 
 	if meta, _ := ds.Metadata(ctx); meta != nil {
 		logrus.Infof("Dataset already exists")
@@ -82,7 +82,7 @@ func (c *Client) ensureDataset(ctx context.Context, client *bigquery.Client) (*b
 	}
 
 	if err := ds.Create(ctx, &bigquery.DatasetMetadata{
-		Name:        c.dataset.Id,
+		Name:        c.dataset.ID,
 		Description: c.dataset.Description,
 		Location:    "US",
 	}); err != nil {
@@ -94,7 +94,7 @@ func (c *Client) ensureDataset(ctx context.Context, client *bigquery.Client) (*b
 }
 
 func (c *Client) ensureTable(ctx context.Context, ds *bigquery.Dataset) (*bigquery.Table, error) {
-	table := ds.Table(c.table.Id)
+	table := ds.Table(c.table.ID)
 	if meta, _ := table.Metadata(ctx); meta != nil {
 		logrus.Infof("Found table with the same name")
 		return table, nil
@@ -114,7 +114,7 @@ func (c *Client) ensureTable(ctx context.Context, ds *bigquery.Dataset) (*bigque
 	if err := table.Create(ctx, meta); err != nil {
 		return nil, errors.Wrapf(err, "could not create BQ table %q", c)
 	}
-	logrus.Infof("Created table %q", c.table.Id)
+	logrus.Infof("Created table %q", c.table.ID)
 
 	return table, nil
 }

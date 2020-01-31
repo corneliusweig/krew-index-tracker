@@ -26,11 +26,11 @@ func HomebrewBigQuery() *uploader.Client {
 	return uploader.NewClient(
 		globals.ProjectID,
 		uploader.Entity{
-			Id:          globals.BQDataset,
+			ID:          globals.BQDataset,
 			Description: "Download counts for all plugins in the centralized krew index",
 		},
 		uploader.Entity{
-			Id:          "homebrew_krew",
+			ID:          "homebrew_krew",
 			Description: "Download counts for krew view homebrew",
 		},
 		func() (bigquery.Schema, error) {
