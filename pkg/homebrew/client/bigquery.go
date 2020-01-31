@@ -22,7 +22,7 @@ import (
 	"github.com/corneliusweig/krew-index-tracker/pkg/uploader"
 )
 
-func GithubBigQuery() *uploader.Client {
+func HomebrewBigQuery() *uploader.Client {
 	return uploader.NewClient(
 		globals.ProjectID,
 		uploader.Entity{
@@ -30,11 +30,11 @@ func GithubBigQuery() *uploader.Client {
 			Description: "Download counts for all plugins in the centralized krew index",
 		},
 		uploader.Entity{
-			Id:          "krew_index_tracker",
-			Description: "Download counts for all plugins in the centralized krew index",
+			Id:          "homebrew_krew",
+			Description: "Download counts for krew view homebrew",
 		},
 		func() (bigquery.Schema, error) {
-			return bigquery.InferSchema(RepoSummary{})
+			return bigquery.InferSchema(HomebrewStats{})
 		},
 	)
 }

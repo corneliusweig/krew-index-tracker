@@ -19,7 +19,4 @@ package constants
 const (
 	IndexDir   = "index"
 	PluginsDir = IndexDir + "/plugins"
-
-	BQDataset   = "plugin_download_count"
-	BQTableName = "krew_index_tracker"
 )

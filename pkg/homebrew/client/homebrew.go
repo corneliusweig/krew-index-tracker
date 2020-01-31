@@ -86,6 +86,7 @@ func (h *Homebrew) FetchAnalytics(ctx context.Context) (HomebrewStats, error) {
 
 func stats(r *HomebrewAPIResponse) HomebrewStats {
 	return HomebrewStats{
+		CreatedAt:      time.Now(),
 		Installs30d:    r.Analytics.Installs.Aggregate30d.Count,
 		Installs90d:    r.Analytics.Installs.Aggregate90d.Count,
 		Installs365d:   r.Analytics.Installs.Aggregate365d.Count,
