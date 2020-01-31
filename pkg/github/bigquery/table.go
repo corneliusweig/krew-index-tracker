@@ -26,10 +26,11 @@ import (
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/github/client"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github/constants"
+	"github.com/corneliusweig/krew-index-tracker/pkg/globals"
 )
 
 func Upload(ctx context.Context, items []client.RepoSummary) error {
-	client, err := bigquery.NewClient(ctx, constants.ProjectID)
+	client, err := bigquery.NewClient(ctx, globals.ProjectID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create bq client")
 	}

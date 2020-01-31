@@ -24,10 +24,9 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v3"
-	"github.com/sirupsen/logrus"
-
 	tracker "github.com/corneliusweig/krew-index-tracker/pkg/github"
-	"github.com/corneliusweig/krew-index-tracker/pkg/github/constants"
+	"github.com/corneliusweig/krew-index-tracker/pkg/globals"
+	"github.com/sirupsen/logrus"
 )
 
 type requestHandler struct{}
@@ -50,7 +49,7 @@ func (h *requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	retry := backoff.WithContext(
-		backoff.WithMaxRetries(backoff.NewExponentialBackOff(), constants.DefaultRetries),
+		backoff.WithMaxRetries(backoff.NewExponentialBackOff(), globals.DefaultRetries),
 		r.Context(),
 	)
 	err := backoff.RetryNotify(func() error {
