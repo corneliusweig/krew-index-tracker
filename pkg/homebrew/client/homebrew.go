@@ -40,8 +40,9 @@ type HomebrewAPIInstalls struct {
 }
 
 type HomebrewAPIAnalytics struct {
-	Installs      HomebrewAPIInstalls `json:"install"`
-	InstallErrors HomebrewAPIInstalls `json:"build_error"`
+	Installs          HomebrewAPIInstalls `json:"install"`
+	InstallsOnRequest HomebrewAPIInstalls `json:"install_on_request"`
+	InstallErrors     HomebrewAPIInstalls `json:"build_error"`
 }
 
 type HomebrewAPIResponse struct {
@@ -49,11 +50,14 @@ type HomebrewAPIResponse struct {
 }
 
 type HomebrewStats struct {
-	CreatedAt      time.Time
-	Installs30d    int `bigquery:"installs_30d"`
-	Installs90d    int `bigquery:"installs_90d"`
-	Installs365d   int `bigquery:"installs_365d"`
-	BuildErrors30d int `bigquery:"build_errors_30d"`
+	CreatedAt             time.Time
+	Installs30d           int `bigquery:"installs_30d"`
+	Installs90d           int `bigquery:"installs_90d"`
+	Installs365d          int `bigquery:"installs_365d"`
+	InstallsOnRequest30d  int `bigquery:"installs_on_request_30d"`
+	InstallsOnRequest90d  int `bigquery:"installs_on_request_90d"`
+	InstallsOnRequest365d int `bigquery:"installs_on_request_365d"`
+	BuildErrors30d        int `bigquery:"build_errors_30d"`
 }
 
 func NewHomebrew(url string) *Homebrew {
@@ -86,10 +90,13 @@ func (h *Homebrew) FetchAnalytics(ctx context.Context) (HomebrewStats, error) {
 
 func stats(r *HomebrewAPIResponse) HomebrewStats {
 	return HomebrewStats{
-		CreatedAt:      time.Now(),
-		Installs30d:    r.Analytics.Installs.Aggregate30d.Count,
-		Installs90d:    r.Analytics.Installs.Aggregate90d.Count,
-		Installs365d:   r.Analytics.Installs.Aggregate365d.Count,
-		BuildErrors30d: r.Analytics.InstallErrors.Aggregate30d.Count,
+		CreatedAt:             time.Now(),
+		Installs30d:           r.Analytics.Installs.Aggregate30d.Count,
+		Installs90d:           r.Analytics.Installs.Aggregate90d.Count,
+		Installs365d:          r.Analytics.Installs.Aggregate365d.Count,
+		InstallsOnRequest30d:  r.Analytics.InstallsOnRequest.Aggregate30d.Count,
+		InstallsOnRequest90d:  r.Analytics.InstallsOnRequest.Aggregate90d.Count,
+		InstallsOnRequest365d: r.Analytics.InstallsOnRequest.Aggregate365d.Count,
+		BuildErrors30d:        r.Analytics.InstallErrors.Aggregate30d.Count,
 	}
 }
