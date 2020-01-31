@@ -22,7 +22,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/corneliusweig/krew-index-tracker/pkg/github/bigquery"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github/client"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository/krew"
@@ -42,7 +41,7 @@ func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateInd
 	}
 
 	logrus.Infof("Uploading summaries to BigQuery")
-	if err := bigquery.Upload(ctx, summaries); err != nil {
+	if err := client.GithubBigQuery().Upload(ctx, summaries); err != nil {
 		return errors.Wrapf(err, "failed saving scraped data")
 	}
 
