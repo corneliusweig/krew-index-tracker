@@ -24,8 +24,9 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v3"
-	tracker "github.com/corneliusweig/krew-index-tracker/pkg/github"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github"
 	"github.com/corneliusweig/krew-index-tracker/pkg/globals"
+	"github.com/corneliusweig/krew-index-tracker/pkg/homebrew"
 	"github.com/sirupsen/logrus"
 )
 
@@ -48,17 +49,33 @@ func (h *requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		logrus.Fatal("GitHub token was not set")
 	}
 
+	var failed bool
 	retry := backoff.WithContext(
 		backoff.WithMaxRetries(backoff.NewExponentialBackOff(), globals.DefaultRetries),
 		r.Context(),
 	)
-	err := backoff.RetryNotify(func() error {
-		return tracker.SaveDownloadCountsToBigQuery(r.Context(), token, true)
+	if err := backoff.RetryNotify(func() error {
+		return github.SaveDownloadCountsToBigQuery(r.Context(), token, true)
 	}, retry, func(err error, duration time.Duration) {
 		logrus.Warnf("Failed after %s with %s", duration, err)
-	})
-	if err != nil {
-		logrus.Fatalf("Failed repeatedly to download and insert data: %s", err)
+	}); err != nil {
+		logrus.Errorf("GitHub scraping failed: %s", err)
+		failed = true
+	}
+
+	if err := backoff.RetryNotify(func() error {
+		return homebrew.SaveAnalyticsToBigQuery(r.Context())
+	}, retry, func(err error, duration time.Duration) {
+		logrus.Warnf("Failed after %s with %s", duration, err)
+	}); err != nil {
+		logrus.Errorf("Homebrew scraping failed: %s", err)
+		failed = true
+	}
+
+	if failed {
+		logrus.Infof("Scraping failed")
+		w.WriteHeader(http.StatusFailedDependency)
+		return
 	}
 
 	logrus.Infof("All good")

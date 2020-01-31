@@ -22,8 +22,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	tracker "github.com/corneliusweig/krew-index-tracker/pkg/github"
+	"github.com/corneliusweig/krew-index-tracker/pkg/github"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github/util"
+	"github.com/corneliusweig/krew-index-tracker/pkg/homebrew"
 )
 
 var (
@@ -34,11 +35,16 @@ var (
 var rootCmd = &cobra.Command{
 	Use:     "krew-index-tracker",
 	Example: "krew-index-tracker",
-	Short:   "Generate a markdown changelog of merged pull requests since last release",
+	Short:   "Upload krew repo statistics to BigQuery",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := util.ContextWithCtrlCHandler(context.Background())
-		return tracker.SaveDownloadCountsToBigQuery(ctx, token, isUpdateIndex)
+
+		if err := github.SaveDownloadCountsToBigQuery(ctx, token, isUpdateIndex); err != nil {
+			return err
+		}
+
+		return homebrew.SaveAnalyticsToBigQuery(ctx)
 	},
 }
 
