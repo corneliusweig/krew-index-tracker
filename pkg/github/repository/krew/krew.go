@@ -77,6 +77,8 @@ func resolveWellKnownDeviations(url string) string {
 		return "github.com/kubernetes/ingress-nginx"
 	case strings.HasPrefix(url, `https://kudo.dev`):
 		return "github.com/kudobuilder/kudo"
+	case strings.HasPrefix(url, `https://kubevirt.io`):
+		return "github.com/kubevirt/kubectl-virt-plugin"
 	default:
 		return url
 	}
