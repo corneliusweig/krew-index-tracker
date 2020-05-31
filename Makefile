@@ -15,10 +15,10 @@
 SRC:=$(shell find . -name '*.go')
 
 krew-index-tracker: $(SRC)
-	go build -ldflags "-s -w" -o $@ ./app/krew-index-tracker
+	go build -trimpath -tags netgo -ldflags "-s -w -extldflags '-static'" -o $@ ./app/krew-index-tracker
 
 krew-index-tracker-http: $(SRC)
-	go build -ldflags "-s -w" -o $@ ./app/http
+	go build -trimpath -tags netgo -ldflags "-s -w -extldflags '-static'" -o $@ ./app/http
 
 .PHONY: lint
 lint: $(SRC)
