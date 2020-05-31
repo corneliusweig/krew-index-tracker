@@ -20,7 +20,7 @@ import (
 	"context"
 	"time"
 
-	api "github.com/google/go-github/v28/github"
+	api "github.com/google/go-github/v32/github"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -75,7 +75,7 @@ func (rf *ReleaseFetcher) Summary(h repository.Handle) (RepoSummary, error) {
 	}, nil
 }
 
-func toAssetSummaries(as []api.ReleaseAsset) (res []AssetSummary) {
+func toAssetSummaries(as []*api.ReleaseAsset) (res []AssetSummary) {
 	for _, asset := range as {
 		res = append(res, AssetSummary{
 			Name:          asset.GetName(),

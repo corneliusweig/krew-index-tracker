@@ -23,7 +23,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github"
 	"github.com/corneliusweig/krew-index-tracker/pkg/globals"
 	"github.com/corneliusweig/krew-index-tracker/pkg/homebrew"
