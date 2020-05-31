@@ -18,7 +18,6 @@ package krew
 
 import (
 	"context"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -69,17 +68,20 @@ func getRepoList() ([]repository.Handle, error) {
 	return res, nil
 }
 
-func resolveWellKnownDeviations(url string) string {
-	switch {
-	case strings.HasPrefix(url, `https://sigs.k8s.io/krew`):
-		return "github.com/kubernetes-sigs/krew"
-	case strings.HasPrefix(url, `https://kubernetes.github.io/ingress-nginx/kubectl-plugin`):
-		return "github.com/kubernetes/ingress-nginx"
-	case strings.HasPrefix(url, `https://kudo.dev`):
-		return "github.com/kudobuilder/kudo"
-	case strings.HasPrefix(url, `https://kubevirt.io`):
-		return "github.com/kubevirt/kubectl-virt-plugin"
-	default:
-		return url
+var knownHomePages = map[string]string{
+	`https://sigs.k8s.io/krew`:                                   "kubernetes-sigs/krew",
+	`https://krew.sigs.k8s.io/`:                                  "kubernetes-sigs/krew",
+	`https://kubernetes.github.io/ingress-nginx/kubectl-plugin/`: "kubernetes/ingress-nginx",
+	`https://kudo.dev/`:                                          "kudobuilder/kudo",
+	`https://kubevirt.io`:                                        "kubevirt/kubectl-virt-plugin",
+	`https://popeyecli.io`:                                       "derailed/popeye",
+	`https://soluble-ai.github.io/kubetap/`:                      "soluble-ai/kubetap",
+}
+
+func resolveWellKnownDeviations(homepage string) string {
+	repo, ok := knownHomePages[homepage]
+	if ok {
+		return "github.com/" + repo
 	}
+	return homepage
 }
