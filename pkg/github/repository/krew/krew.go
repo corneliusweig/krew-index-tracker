@@ -76,6 +76,7 @@ var knownHomePages = map[string]string{
 	`https://kubevirt.io`:                                        "kubevirt/kubectl-virt-plugin",
 	`https://popeyecli.io`:                                       "derailed/popeye",
 	`https://soluble-ai.github.io/kubetap/`:                      "soluble-ai/kubetap",
+	"https://schemahero.io":                                      "schemahero/schemahero",
 }
 
 func resolveWellKnownDeviations(homepage string) string {
