@@ -23,15 +23,9 @@ import (
 	api "github.com/google/go-github/v34/github"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository"
 )
-
-type ReleaseFetcher struct {
-	ctx    context.Context
-	client *api.Client
-}
 
 type RepoSummary struct {
 	PluginName string           `json:"pluginName,omitempty"`
@@ -53,16 +47,9 @@ type AssetSummary struct {
 	DownloadCount int    `json:"download_count"`
 }
 
-func NewReleaseFetcher(ctx context.Context, token string) *ReleaseFetcher {
-	return &ReleaseFetcher{
-		ctx:    ctx,
-		client: getClient(ctx, token),
-	}
-}
-
-func (rf *ReleaseFetcher) Summary(h repository.Handle) (RepoSummary, error) {
+func Summary(ctx context.Context, cli *api.Client, h repository.Handle) (RepoSummary, error) {
 	logrus.Infof("Fetching summary for %s/%s", h.Owner, h.Repo)
-	releases, _, err := rf.client.Repositories.ListReleases(rf.ctx, h.Owner, h.Repo, nil)
+	releases, _, err := cli.Repositories.ListReleases(ctx, h.Owner, h.Repo, nil)
 	if err != nil {
 		return RepoSummary{}, errors.Wrapf(err, "listing releases of %s/%s", h.Owner, h.Repo)
 	}
@@ -73,17 +60,6 @@ func (rf *ReleaseFetcher) Summary(h repository.Handle) (RepoSummary, error) {
 		CreatedAt:  time.Now(),
 		Releases:   toReleaseSummaries(releases),
 	}, nil
-}
-
-func toAssetSummaries(as []*api.ReleaseAsset) (res []AssetSummary) {
-	for _, asset := range as {
-		res = append(res, AssetSummary{
-			Name:          asset.GetName(),
-			URL:           asset.GetBrowserDownloadURL(),
-			DownloadCount: asset.GetDownloadCount(),
-		})
-	}
-	return
 }
 
 func toReleaseSummaries(rs []*api.RepositoryRelease) (res []ReleaseSummary) {
@@ -101,13 +77,13 @@ func toReleaseSummaries(rs []*api.RepositoryRelease) (res []ReleaseSummary) {
 	return
 }
 
-func getClient(ctx context.Context, token string) *api.Client {
-	if len(token) == 0 {
-		return api.NewClient(nil)
+func toAssetSummaries(as []*api.ReleaseAsset) (res []AssetSummary) {
+	for _, asset := range as {
+		res = append(res, AssetSummary{
+			Name:          asset.GetName(),
+			URL:           asset.GetBrowserDownloadURL(),
+			DownloadCount: asset.GetDownloadCount(),
+		})
 	}
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	return api.NewClient(tc)
+	return
 }

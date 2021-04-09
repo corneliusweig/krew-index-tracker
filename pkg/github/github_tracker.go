@@ -18,9 +18,12 @@ package github
 
 import (
 	"context"
+	"net/http"
 
+	api "github.com/google/go-github/v34/github"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 
 	"github.com/corneliusweig/krew-index-tracker/pkg/github/client"
 	"github.com/corneliusweig/krew-index-tracker/pkg/github/repository"
@@ -35,10 +38,7 @@ func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateInd
 	}
 
 	logrus.Infof("Fetching repository download summaries")
-	summaries, err := fetchSummaries(ctx, token, repos)
-	if err != nil {
-		return errors.Wrapf(err, "could not fetch repo summaries")
-	}
+	summaries := fetchSummaries(ctx, token, repos)
 
 	logrus.Infof("Uploading summaries to BigQuery")
 	if err := client.GithubBigQuery().Upload(ctx, summaries); err != nil {
@@ -48,15 +48,21 @@ func SaveDownloadCountsToBigQuery(ctx context.Context, token string, isUpdateInd
 	return nil
 }
 
-func fetchSummaries(ctx context.Context, token string, handles []repository.Handle) ([]client.RepoSummary, error) {
-	releases := client.NewReleaseFetcher(ctx, token)
-	summaries := make([]client.RepoSummary, 0, len(handles))
-	for _, h := range handles {
-		summary, err := releases.Summary(h)
-		if err != nil {
-			return nil, err
-		}
-		summaries = append(summaries, summary)
+func fetchSummaries(ctx context.Context, token string, handles []repository.Handle) []client.RepoSummary {
+	var httpCli *http.Client
+	if token != "" {
+		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+		httpCli = oauth2.NewClient(ctx, ts)
 	}
-	return summaries, nil
+	cli := api.NewClient(httpCli)
+
+	var ret []client.RepoSummary
+	for _, h := range handles {
+		summary, err := client.Summary(ctx, cli, h)
+		if err != nil {
+			logrus.Warnf("Could not fetch summary for %q: %v", h.PluginName, err)
+		}
+		ret = append(ret, summary)
+	}
+	return ret
 }
