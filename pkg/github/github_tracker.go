@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Cornelius Weig.
+Copyright 2020 Cornelius Weig.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package github
 import (
 	"context"
 	"net/http"
+	"sync"
 
 	api "github.com/google/go-github/v34/github"
 	"github.com/pkg/errors"
@@ -56,13 +57,28 @@ func fetchSummaries(ctx context.Context, token string, handles []repository.Hand
 	}
 	cli := api.NewClient(httpCli)
 
+	var mu sync.Mutex // guards ret
 	var ret []client.RepoSummary
+
+	const poolSize = 20
+	sem := make(chan struct{}, poolSize)
 	for _, h := range handles {
-		summary, err := client.Summary(ctx, cli, h)
-		if err != nil {
-			logrus.Warnf("Could not fetch summary for %q: %v", h.PluginName, err)
-		}
-		ret = append(ret, summary)
+		h := h
+		sem <- struct{}{}
+		go func() {
+			defer func() { <-sem }()
+			summary, err := client.Summary(ctx, cli, h)
+			if err != nil {
+				logrus.Warnf("Could not fetch summary for %q: %v", h.PluginName, err)
+				return
+			}
+			mu.Lock()
+			defer mu.Unlock()
+			ret = append(ret, summary)
+		}()
+	}
+	for i := 0; i < poolSize; i++ {
+		sem <- struct{}{}
 	}
 	return ret
 }
