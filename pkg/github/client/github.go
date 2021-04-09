@@ -20,7 +20,7 @@ import (
 	"context"
 	"time"
 
-	api "github.com/google/go-github/v32/github"
+	api "github.com/google/go-github/v34/github"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"

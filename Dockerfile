@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.14-alpine as builder
+FROM golang:1.16-alpine as builder
 
 RUN apk add --no-cache git upx
 
@@ -32,7 +32,7 @@ COPY pkg ./pkg/
 RUN go build -trimpath -tags netgo -ldflags "-s -w -extldflags '-static'" -o krew-index-tracker ./app/http
 RUN upx -q -9 krew-index-tracker
 
-FROM alpine:3.10
+FROM alpine:3.13
 LABEL maintainer=cornelius.weig@gmail.com
 EXPOSE 8080
 
